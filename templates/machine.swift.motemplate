@@ -4,34 +4,34 @@
 import CoreData
 
 <$if noninheritedAttributes.@count > 0$>
-enum <$managedObjectClassName$>Attributes: String {<$foreach Attribute noninheritedAttributes do$>
+enum <$derivedManagedObjectClassName$>Attributes: String {<$foreach Attribute noninheritedAttributes do$>
     case <$Attribute.name$> = "<$Attribute.name$>"<$endforeach do$>
 }
 <$endif$>
 
 <$if noninheritedRelationships.@count > 0$>
-enum <$managedObjectClassName$>Relationships: String {<$foreach Relationship noninheritedRelationships do$>
+enum <$derivedManagedObjectClassName$>Relationships: String {<$foreach Relationship noninheritedRelationships do$>
     case <$Relationship.name$> = "<$Relationship.name$>"<$endforeach do$>
 }
 <$endif$>
 
 <$if noninheritedFetchedProperties.@count > 0$>
-enum <$managedObjectClassName$>FetchedProperties: String {<$foreach FetchedProperty noninheritedFetchedProperties do$>
+enum <$derivedManagedObjectClassName$>FetchedProperties: String {<$foreach FetchedProperty noninheritedFetchedProperties do$>
     case <$FetchedProperty.name$> = "<$FetchedProperty.name$>"<$endforeach do$>
 }
 <$endif$>
 
 <$if hasUserInfoKeys$>
-enum <$managedObjectClassName$>UserInfo: String {<$foreach UserInfo userInfoKeyValues do$>
+enum <$derivedManagedObjectClassName$>UserInfo: String {<$foreach UserInfo userInfoKeyValues do$>
     case <$UserInfo.key$> = "<$UserInfo.key$>"<$endforeach do$>
 }
 <$endif$>
 
 @objc
-public class _<$managedObjectClassName$>: <$customSuperentity$> {
+public class _<$derivedManagedObjectClassName$>: <$customSuperentity$> {
 
     // MARK: - Class methods
-    
+
     <$if hasCustomSuperentity$>override <$endif$>public class func entityName () -> String {
         return "<$name$>"
     }
@@ -47,7 +47,7 @@ public class _<$managedObjectClassName$>: <$customSuperentity$> {
     }
 
     convenience init(managedObjectContext: NSManagedObjectContext!) {
-        let entity = _<$managedObjectClassName$>.entity(managedObjectContext)
+        let entity = _<$derivedManagedObjectClassName$>.entity(managedObjectContext)
         self.init(entity: entity, insertIntoManagedObjectContext: managedObjectContext)
     }
 
@@ -60,7 +60,7 @@ public class _<$managedObjectClassName$>: <$customSuperentity$> {
     let <$Attribute.name$>: NSNumber?
 <$else$>
     @NSManaged
-    var <$Attribute.name$>: NSNumber?
+    public var <$Attribute.name$>: NSNumber?
 <$endif$>
 <$else$>
 <$if Attribute.isReadonly$>
@@ -68,7 +68,7 @@ public class _<$managedObjectClassName$>: <$customSuperentity$> {
     let <$Attribute.name$>: <$Attribute.objectAttributeType$><$if Attribute.isOptional$>?<$endif$>
 <$else$>
     @NSManaged
-    var <$Attribute.name$>: <$Attribute.objectAttributeType$><$if Attribute.isOptional$>?<$endif$>
+    public var <$Attribute.name$>: <$Attribute.objectAttributeType$><$if Attribute.isOptional$>?<$endif$>
 <$endif$>
 <$endif$>
     // func validate<$Attribute.name.initialCapitalString$>(value: AutoreleasingUnsafePointer<AnyObject>, error: NSErrorPointer) {}
@@ -79,11 +79,11 @@ public class _<$managedObjectClassName$>: <$customSuperentity$> {
 <$foreach Relationship noninheritedRelationships do$>
 <$if Relationship.isToMany$>
     @NSManaged
-    var <$Relationship.name$>: <$Relationship.immutableCollectionClassName$>
+    public var <$Relationship.name$>: <$Relationship.immutableCollectionClassName$>
 
 <$else$>
     @NSManaged
-    var <$Relationship.name$>: <$Relationship.destinationEntity.managedObjectClassName$><$if Relationship.isOptional$>?<$endif$>
+    public var <$Relationship.name$>: <$Relationship.destinationEntity.derivedManagedObjectClassName$><$if Relationship.isOptional$>?<$endif$>
 
     // func validate<$Relationship.name.initialCapitalString$>(value: AutoreleasingUnsafePointer<AnyObject>, error: NSErrorPointer) {}
 <$endif$>
@@ -155,12 +155,12 @@ public class _<$managedObjectClassName$>: <$customSuperentity$> {
 
 <$foreach FetchedProperty noninheritedFetchedProperties do$>
     @NSManaged
-    let <$FetchedProperty.name$>: [<$FetchedProperty.entity.managedObjectClassName$>]
+    let <$FetchedProperty.name$>: [<$FetchedProperty.entity.derivedManagedObjectClassName$>]
 <$endforeach do$>
 }
 
 <$foreach Relationship noninheritedRelationships do$><$if Relationship.isToMany$>
-extension _<$managedObjectClassName$> {
+extension _<$derivedManagedObjectClassName$> {
 
     func add<$Relationship.name.initialCapitalString$>(objects: <$Relationship.immutableCollectionClassName$>) {
         let mutable = self.<$Relationship.name$>.mutableCopy() as NSMutable<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
@@ -174,13 +174,13 @@ extension _<$managedObjectClassName$> {
         self.<$Relationship.name$> = mutable.copy() as NS<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
     }
 
-    func add<$Relationship.name.initialCapitalString$>Object(value: <$Relationship.destinationEntity.managedObjectClassName$>!) {
+    func add<$Relationship.name.initialCapitalString$>Object(value: <$Relationship.destinationEntity.derivedManagedObjectClassName$>!) {
         let mutable = self.<$Relationship.name$>.mutableCopy() as NSMutable<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
         mutable.addObject(value)
         self.<$Relationship.name$> = mutable.copy() as NS<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
     }
 
-    func remove<$Relationship.name.initialCapitalString$>Object(value: <$Relationship.destinationEntity.managedObjectClassName$>!) {
+    func remove<$Relationship.name.initialCapitalString$>Object(value: <$Relationship.destinationEntity.derivedManagedObjectClassName$>!) {
         let mutable = self.<$Relationship.name$>.mutableCopy() as NSMutable<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
         mutable.removeObject(value)
         self.<$Relationship.name$> = mutable.copy() as NS<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
