@@ -160,7 +160,7 @@ static NSString *const kAdditionalHeaderFileNameKey = @"additionalHeaderFileName
     if (!forcedBaseClass) {
         NSEntityDescription *superentity = [self superentity];
         if (superentity) {
-            return [superentity managedObjectClassName];
+            return [superentity derivedManagedObjectClassName];
         } else {
             return gCustomBaseClass ? gCustomBaseClass : @"NSManagedObject";
         }
