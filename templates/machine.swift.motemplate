@@ -5,51 +5,46 @@ import CoreData
 <$if hasAdditionalHeaderFile$>import <$additionalHeaderFileName$><$endif$>
 <$if hasCustomBaseCaseImport$>import <$baseClassImport$><$endif$>
 
-<$if noninheritedAttributes.@count > 0$>
-public enum <$managedObjectClassName$>Attributes: String {<$foreach Attribute noninheritedAttributes do$>
-    case <$Attribute.name$> = "<$Attribute.name$>"<$endforeach do$>
-}
-<$endif$>
+public extension <$managedObjectClassName$> {
 
-<$if noninheritedRelationships.@count > 0$>
-public enum <$managedObjectClassName$>Relationships: String {<$foreach Relationship noninheritedRelationships do$>
-    case <$Relationship.name$> = "<$Relationship.name$>"<$endforeach do$>
-}
-<$endif$>
+    <$if noninheritedAttributes.@count > 0$>
+    public enum Attributes: String {<$foreach Attribute noninheritedAttributes do$>
+        case <$Attribute.name.initialCapitalString$> = "<$Attribute.name$>"<$endforeach do$>
+    }
+    <$endif$>
 
-<$if noninheritedFetchedProperties.@count > 0$>
-public enum <$managedObjectClassName$>FetchedProperties: String {<$foreach FetchedProperty noninheritedFetchedProperties do$>
-    case <$FetchedProperty.name$> = "<$FetchedProperty.name$>"<$endforeach do$>
-}
-<$endif$>
+    <$if noninheritedRelationships.@count > 0$>
+    public enum Relationships: String {<$foreach Relationship noninheritedRelationships do$>
+        case <$Relationship.name.initialCapitalString$> = "<$Relationship.name$>"<$endforeach do$>
+    }
+    <$endif$>
 
-<$if hasUserInfoKeys$>
-public enum <$managedObjectClassName$>UserInfo: String {<$foreach UserInfo userInfoKeyValues do$>
-    case <$UserInfo.key$> = "<$UserInfo.key$>"<$endforeach do$>
-}
-<$endif$>
+    <$if noninheritedFetchedProperties.@count > 0$>
+    public enum FetchedProperties: String {<$foreach FetchedProperty noninheritedFetchedProperties do$>
+        case <$FetchedProperty.name.initialCapitalString$> = "<$FetchedProperty.name$>"<$endforeach do$>
+    }
+    <$endif$>
 
-@objc public
-class _<$managedObjectClassName$>: <$customSuperentity$> {
+    <$if hasUserInfoKeys$>
+    public enum UserInfo: String {<$foreach UserInfo userInfoKeyValues do$>
+        case <$UserInfo.key.initialCapitalString$> = "<$UserInfo.key$>"<$endforeach do$>
+    }
+    <$endif$>
 
     // MARK: - Class methods
-    
-    <$if (hasCustomSuperclass || (hasCustomSuperentity && TemplateVar.overrideBaseClass))$>override <$endif$>public class func entityName () -> String {
+
+    <$if (hasCustomSuperclass || (hasCustomSuperentity && TemplateVar.overrideBaseClass))$>override <$endif$>public class var entityName: String {
         return "<$name$>"
     }
 
     <$if (hasCustomSuperclass || (hasCustomSuperentity && TemplateVar.overrideBaseClass))$>override <$endif$>public class func entity(managedObjectContext: NSManagedObjectContext!) -> NSEntityDescription! {
-        return NSEntityDescription.entityForName(self.entityName(), inManagedObjectContext: managedObjectContext);
+        return NSEntityDescription.entityForName(entityName, inManagedObjectContext: managedObjectContext)
     }
 
     // MARK: - Life cycle methods
 
-    public override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext!) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
-    }
-    
     public convenience init(managedObjectContext: NSManagedObjectContext!) {
-        let entity = _<$managedObjectClassName$>.entity(managedObjectContext)
+        let entity = <$managedObjectClassName$>.entity(managedObjectContext)
         self.init(entity: entity, insertIntoManagedObjectContext: managedObjectContext)
     }
 
@@ -58,7 +53,7 @@ class _<$managedObjectClassName$>: <$customSuperentity$> {
 <$if Attribute.hasDefinedAttributeType$>
 <$if Attribute.hasScalarAttributeType$>
 <$if Attribute.isReadonly$>
-    public var <$Attribute.name$>: NSNumber?
+    public var <$Attribute.name$>: <$Attribute.scalarAttributeType$>
     {
         self.willAccessValueForKey(<$managedObjectClassName$>Attributes.<$Attribute.name$>.rawValue)
         let <$Attribute.name$> = self.primitiveValueForKey(<$managedObjectClassName$>Attributes.<$Attribute.name$>.rawValue) as? NSNumber
@@ -67,7 +62,7 @@ class _<$managedObjectClassName$>: <$customSuperentity$> {
     }
 <$else$>
     @NSManaged public
-    var <$Attribute.name$>: NSNumber?
+    var <$Attribute.name$>: <$Attribute.scalarAttributeType$>
 <$endif$>
 <$else$>
 <$if Attribute.isReadonly$>
@@ -93,6 +88,16 @@ class _<$managedObjectClassName$>: <$customSuperentity$> {
     @NSManaged public
     var <$Relationship.name$>: <$Relationship.immutableCollectionClassName$>
 
+    public var <$Relationship.name$>Set: <$Relationship.mutableCollectionClassName$>! {
+        self.willAccessValueForKey("<$Relationship.name$>")
+<$if Relationship.jr_isOrdered$>
+        let result = self.mutableOrderedSetValueForKey("<$Relationship.name$>")
+<$else$>
+        let result = self.mutableSetValueForKey("<$Relationship.name$>")
+<$endif$>
+        self.didAccessValueForKey("<$Relationship.name$>")
+        return result
+    }
 <$else$>
     @NSManaged public
     var <$Relationship.name$>: <$Relationship.destinationEntity.managedObjectClassName$><$if Relationship.isOptional$>?<$endif$>
@@ -133,11 +138,11 @@ class _<$managedObjectClassName$>: <$customSuperentity$> {
                 NSLog("WARN fetch request <$FetchRequest.name$>: 0 or 1 objects expected, %lu found (substitutionVariables:%@, results:%@)",
                     results!.count,
                     substitutionVariables,
-                    results!);
+                    results!)
             }
         }
 
-        return result;
+        return result
     }
 <$else$>
     class func fetch<$FetchRequest.name.initialCapitalString$>(managedObjectContext: NSManagedObjectContext!<$foreach Binding FetchRequest.bindings do2$>, <$Binding.name$>: <$Binding.type$><$endforeach do2$>) -> [AnyObject] {
@@ -169,34 +174,5 @@ class _<$managedObjectClassName$>: <$customSuperentity$> {
     @NSManaged public
     let <$FetchedProperty.name$>: [<$FetchedProperty.entity.managedObjectClassName$>]
 <$endforeach do$>
-}
-
-<$foreach Relationship noninheritedRelationships do$><$if Relationship.isToMany$>
-extension _<$managedObjectClassName$> {
-
-    func add<$Relationship.name.initialCapitalString$>(objects: <$Relationship.immutableCollectionClassName$>) {
-        let mutable = self.<$Relationship.name$>.mutableCopy() as! NSMutable<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-        mutable.union<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set(objects<$if !Relationship.jr_isOrdered$> as! Set<NSObject><$endif$>)
-        self.<$Relationship.name$> = mutable.copy() as! NS<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-    }
-
-    func remove<$Relationship.name.initialCapitalString$>(objects: <$Relationship.immutableCollectionClassName$>) {
-        let mutable = self.<$Relationship.name$>.mutableCopy() as! NSMutable<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-        mutable.minus<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set(objects<$if !Relationship.jr_isOrdered$> as! Set<NSObject><$endif$>)
-        self.<$Relationship.name$> = mutable.copy() as! NS<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-    }
-
-    func add<$Relationship.name.initialCapitalString$>Object(value: <$Relationship.destinationEntity.managedObjectClassName$>!) {
-        let mutable = self.<$Relationship.name$>.mutableCopy() as! NSMutable<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-        mutable.addObject(value)
-        self.<$Relationship.name$> = mutable.copy() as! NS<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-    }
-
-    func remove<$Relationship.name.initialCapitalString$>Object(value: <$Relationship.destinationEntity.managedObjectClassName$>!) {
-        let mutable = self.<$Relationship.name$>.mutableCopy() as! NSMutable<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-        mutable.removeObject(value)
-        self.<$Relationship.name$> = mutable.copy() as! NS<$if Relationship.jr_isOrdered$>Ordered<$endif$>Set
-    }
 
 }
-<$endif$><$endforeach do$>

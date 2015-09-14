@@ -1,5 +1,5 @@
 @objc(<$managedObjectClassName$>)
-public class <$managedObjectClassName$>: _<$managedObjectClassName$> {
+public class <$managedObjectClassName$>: <$customSuperentity$> {
 
 	// Custom logic goes here.
 

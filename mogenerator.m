@@ -1100,7 +1100,8 @@ NSString *ApplicationSupportSubdirectoryName = @"mogenerator";
             generatedHumanH = [generatedHumanH stringByReplacingOccurrencesOfRegex:searchPattern withString:replacementString];
             generatedHumanM = [generatedHumanM stringByReplacingOccurrencesOfRegex:searchPattern withString:replacementString];
 
-            NSString *entityClassName = [entity managedObjectClassName];
+            NSString *entityClassNameWithPackage = [entity managedObjectClassName];
+            NSString *entityClassName = [[entityClassNameWithPackage componentsSeparatedByString:@"."] lastObject];
             BOOL machineDirtied = NO;
 
             // Machine header files.
